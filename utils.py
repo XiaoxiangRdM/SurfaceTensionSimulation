@@ -10,7 +10,7 @@ def div(u, NX, NY, NZ):
                 if i == 0:
                     divsp[i, j, k] += u[i+1, j, k] - u[i, j, k]
                 elif i == NX-1:
-                    divsp[i, j, k] -= u[i, j, k] - u[i-1, j, k]
+                    divsp[i, j, k] += u[i, j, k] - u[i-1, j, k]
                 else:
                     divsp[i, j, k] += (u[i+1, j, k] - u[i-1, j, k]) / 2.0
     # y方向
@@ -20,7 +20,7 @@ def div(u, NX, NY, NZ):
                 if j == 0:
                     divsp[i, j, k] += u[i, j+1, k] - u[i, j, k]
                 elif j == NY-1:
-                    divsp[i, j, k] -= u[i, j, k] - u[i, j-1, k]
+                    divsp[i, j, k] += u[i, j, k] - u[i, j-1, k]
                 else:
                     divsp[i, j, k] += (u[i, j+1, k] - u[i, j-1, k]) / 2.0
     # z方向
@@ -30,7 +30,7 @@ def div(u, NX, NY, NZ):
                 if k == 0:
                     divsp[i, j, k] += u[i, j, k+1] - u[i, j, k]
                 elif k == NZ-1:
-                    divsp[i, j, k] -= u[i, j, k] - u[i, j, k-1]
+                    divsp[i, j, k] += u[i, j, k] - u[i, j, k-1]
                 else:
                     divsp[i, j, k] += (u[i, j, k+1] - u[i, j, k-1]) / 2.0
     return divsp
