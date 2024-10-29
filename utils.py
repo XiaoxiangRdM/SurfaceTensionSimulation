@@ -37,31 +37,37 @@ def div(u, NX, NY, NZ):
 
 def grad(p, NX, NY, NZ):
     """计算梯度"""
-    gradp = np.zeros((NX+1, NY+1, NZ+1))
+    gradp = np.zeros((NX, NY, NZ, 3))
     # x方向
-    for i in range(NX+1):
+    for i in range(NX):
         for j in range(NY):
             for k in range(NZ):
                 if i == 0:
-                    gradp[i, j, k] = p[i, j, k] - p[i+1, j, k]
+                    gradp[i, j, k, 0] = p[i+1, j, k, 0] - p[i, j, k,0]
+                elif i == NX-1:
+                    gradp[i, j, k, 0] = p[i, j, k, 0] - p[i-1, j, k, 0]
                 else:
-                    gradp[i, j, k] = (p[i, j, k] - p[i-1, j, k]) / 2.0
+                    gradp[i, j, k, 0] = (p[i+1, j, k, 0] - p[i-1, j, k, 0]) / 2.0
     # y方向
-    for i in range(NX+1):
+    for i in range(NX):
         for j in range(NY):
             for k in range(NZ):
                 if j == 0:
-                    gradp[i, j, k] = p[i, j, k] - p[i, j+1, k]
+                    gradp[i, j, k, 0] = p[i, j+1, k, 0] - p[i, j, k, 0]
+                elif j == NY-1:
+                    gradp[i, j, k, 0] = p[i, j, k, 0] - p[i, j-1, k, 0] 
                 else:
-                    gradp[i, j, k] = (p[i, j, k] - p[i, j-1, k]) / 2.0
+                    gradp[i, j, k, 0] = (p[i, j+1, k, 0] - p[i, j-1, k, 0]) / 2.0
     # z方向
-    for i in range(NX+1):
+    for i in range(NX):
         for j in range(NY):
             for k in range(NZ):
                 if k == 0:
-                    gradp[i, j, k] = p[i, j, k] - p[i, j, k+1]
+                    gradp[i, j, k, 0] = p[i, j, k+1, 0] - p[i, j, k, 0]
+                elif k == NZ-1:
+                    gradp[i, j, k, 0] = p[i, j, k, 0] - p[i, j, k-1, 0]
                 else:
-                    gradp[i, j, k] = (p[i, j, k] - p[i, j, k-1]) / 2.0
+                    gradp[i, j, k, 0] = (p[i, j, k+1, 0] - p[i, j, k-1, 0]) / 2.0
     return gradp
 
 def pressure_solve(u, p, NX, NY, NZ):
