@@ -101,3 +101,41 @@ def pressure_solve(u, p, NX, NY, NZ):
         if np.max(np.abs(p_new - p_old)) < tolerance:
             break
     return p_new
+
+def skew_matrix(omega):
+    """
+    Generate a skew-symmetric matrix from a 3D vector.
+    
+    Parameters:
+    omega (np.array): A 3D vector (omega_x, omega_y, omega_z).
+    
+    Returns:
+    np.array: A 3x3 skew-symmetric matrix.
+    """
+    return np.array([
+        [0, -omega[2], omega[1]],
+        [omega[2], 0, -omega[0]],
+        [-omega[1], omega[0], 0]
+    ])
+
+def rotate(omega, theta):
+    """
+    Compute the rotation matrix given a rotation axis and an angle.
+    
+    Parameters:
+    omega (np.array): A 3D vector representing the rotation axis (|omega| = 1).
+    theta (float): The rotation angle in radians.
+    
+    Returns:
+    np.array: A 3x3 rotation matrix.
+    """
+    # Ensure omega is a unit vector
+    omega = omega / np.linalg.norm(omega)
+    
+    # Compute the skew-symmetric matrix
+    skew_omega = skew_matrix(omega)
+    
+    # Compute the rotation matrix
+    R = np.eye(3) + np.sin(theta) * skew_omega + (1 - np.cos(theta)) * np.dot(skew_omega, skew_omega)
+    
+    return R

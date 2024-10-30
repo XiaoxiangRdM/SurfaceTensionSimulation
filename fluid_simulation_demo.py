@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import utils
+import SurfaceTension.utils as utils
 
 # 设置网格大小
 NX = 100

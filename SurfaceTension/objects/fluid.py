@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import utils
+import SurfaceTension.utils as utils
 
 class fluid_object():
     def __init__(self, NX, NY, NZ):
