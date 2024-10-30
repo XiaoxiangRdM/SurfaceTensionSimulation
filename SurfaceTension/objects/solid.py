@@ -21,9 +21,12 @@ class SolidObject():
         posi_change = self.velo * time + 0.5 * acc * time * time
         self.centroid += posi_change
         self.velo += acc * time
-        ang_acc = torque @ np.linalg.inv(self.iner)  # 使用矩阵乘法
+        omega = np.array([[0, -self.ang_velo[2], self.ang_velo[1]], [self.ang_velo[2], 0, -self.ang_velo[0]], [-self.ang_velo[1], self.ang_velo[0], 0]])
+        iner_inv = np.linalg.inv(self.iner)
+        ang_acc = iner_inv @ torque + ((iner_inv @ omega @ self.iner) + omega) @ self.ang_velo # 使用矩阵乘法
         self.angle += self.ang_velo * time + 0.5 * ang_acc * time * time
         self.ang_velo += ang_acc * time
+        # 更新 inertial matrix
 
 
     def check_inside(self, pos):
