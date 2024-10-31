@@ -109,6 +109,17 @@ class SolidObject():
         # 判断交点数量
         return len(intersections) % 2 == 1
 
+    def get_mesh_data(self):
+        """
+        获取网格的顶点和面数据。
+
+        Returns:
+        - vertices (np.ndarray): 顶点坐标的数组，形状为 (N, 3)。
+        - faces (np.ndarray): 面的顶点索引数组，形状为 (M, 3)。
+        """
+        vertices = self.mesh.vertices  # 获取顶点坐标
+        faces = self.mesh.faces  # 获取面索引
+        return vertices, faces
 
         
         
