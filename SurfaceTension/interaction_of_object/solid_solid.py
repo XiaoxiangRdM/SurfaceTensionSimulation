@@ -17,10 +17,10 @@ class SolidSolidInteraction():
         if (not Bool_intersecting): 
             return
         
-        if (distance < 0): 
-            # Move them to avoid the threshold, while keeping the center of mass still
-            self.solid1.centroid += self.mass2_fraction * (distance + 2 * self.collision_threshold) * normal
-            self.solid2.centroid -= self.mass1_fraction * (distance + 2 * self.collision_threshold) * normal
+        
+        # Move them to avoid the threshold, while keeping the center of mass still
+        self.solid1.centroid += self.mass2_fraction * (distance - 2 * self.collision_threshold) * normal
+        self.solid2.centroid -= self.mass1_fraction * (distance - 2 * self.collision_threshold) * normal
             
         # Vectors from centriods to bounce point 
         r_1 = bounce_point - self.solid1.centroid
@@ -84,6 +84,11 @@ class SolidSolidInteraction():
             # Normalize the collision normal
             normal = direction_vector / np.linalg.norm(direction_vector)  
             # TODO: what if normal is a zero vertor? 
+            if (distance < 0):
+                normal = -normal
+            if (distance == 0):
+                # Find the normal from the face of the solid
+                normal = np.array([0, 0, 0])
             
             return True, bounce_point, normal, np.min(distance)
         return False, None, None, None
