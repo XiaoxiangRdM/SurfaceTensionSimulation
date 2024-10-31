@@ -25,6 +25,7 @@ class SolidObject():
             and computed during initialization.
         - However, most time we use inertia tensor under the ground coordinates system. 
         """
+        assert mass > 0, "Mass must be a float larger than zero."
         assert len(iner) == 3, "Inertia tensor must be a length-3 array for a diagonal matrix."
         assert all(i > 0 for i in iner), "Each diagonal element of the inertia tensor must be greater than zero."
         self.name = name
@@ -53,7 +54,7 @@ class SolidObject():
         Returns:
         - np.ndarray: 3x3 rotation matrix.
         """
-        # axis = axis / np.linalg.norm(axis)  # Ensure axis is a unit vector
+        axis = axis / np.linalg.norm(axis)  # Ensure axis is a unit vector
         K = np.array([
             [0, -axis[2], axis[1]],
             [axis[2], 0, -axis[0]],
@@ -91,7 +92,8 @@ class SolidObject():
         avg_ang_velo_value = np.linalg.norm(avg_ang_velo)
         if avg_ang_velo_value != 0:
             current_axis = (avg_ang_velo) / avg_ang_velo_value
-            self.rotation_matrix = self.rotation_matrix @ self.compute_rotation_matrix(current_axis, avg_ang_velo_value * time)
+            self.rotation_matrix = self.rotation_matrix @ \
+                self.compute_rotation_matrix(current_axis, avg_ang_velo_value * time)
 
         
         # Update angular velocity
@@ -101,24 +103,24 @@ class SolidObject():
 
     def check_inside(self, pos):
         
-        ray_direction = [0, 0, 1] # doesn't matter
+        ray_direction = [0, 0, 1] # Doesn't matter
 
         ray_origin = pos
         intersections = self.mesh.ray.intersects_location(ray_origin, ray_direction)
         
-        # 判断交点数量
+        # Detect the number of intersections
         return len(intersections) % 2 == 1
 
     def get_mesh_data(self):
         """
-        获取网格的顶点和面数据。
+        Retrieves the vertices and faces data of the mesh.
 
         Returns:
-        - vertices (np.ndarray): 顶点坐标的数组，形状为 (N, 3)。
-        - faces (np.ndarray): 面的顶点索引数组，形状为 (M, 3)。
+        - vertices (np.ndarray): Array of vertex coordinates with shape (N, 3).
+        - faces (np.ndarray): Array of face vertex indices with shape (M, 3).
         """
-        vertices = self.mesh.vertices  # 获取顶点坐标
-        faces = self.mesh.faces  # 获取面索引
+        vertices = self.mesh.vertices  # Get vertex coordinates
+        faces = self.mesh.faces  # Get face indices
         return vertices, faces
 
         
