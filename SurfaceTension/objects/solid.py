@@ -36,6 +36,7 @@ class SolidObject():
         self.rotation_matrix = self.compute_rotation_matrix(axis, angle)
         self.velo = velo
         self.ang_velo = ang_velo
+        self.obj_file = obj_file
         self.mesh = trimesh.load(obj_file)  # Load .obj file
     
         self.axis = axis # stop maintenance
@@ -53,8 +54,6 @@ class SolidObject():
         - np.ndarray: 3x3 rotation matrix.
         """
         # axis = axis / np.linalg.norm(axis)  # Ensure axis is a unit vector
-        # NO NEED TO ENSURE. 
-        # WE NEED THE CASE OF HAVING AXIS AS ANGULAR VELOCITY. 
         K = np.array([
             [0, -axis[2], axis[1]],
             [axis[2], 0, -axis[0]],
@@ -84,11 +83,16 @@ class SolidObject():
         ang_velo_skew = utils.skew_matrix(self.ang_velo)
         
         # Calculate angular accelaration
-        ang_acc = ang_acc = iner_inv_ground @ (torque - ang_velo_skew @ iner_ground @ self.ang_velo)
+        ang_acc = iner_inv_ground @ (torque - ang_velo_skew @ iner_ground @ self.ang_velo)
 
         
         # Update rotation matrix 
-        self.rotation_matrix @= self.compute_rotation_matrix(self.ang_velo + 0.5 * time * ang_acc, time)
+        avg_ang_velo = self.ang_velo + 0.5 * ang_acc * time
+        avg_ang_velo_value = np.linalg.norm(avg_ang_velo)
+        if avg_ang_velo_value != 0:
+            current_axis = (avg_ang_velo) / avg_ang_velo_value
+            self.rotation_matrix = self.rotation_matrix @ self.compute_rotation_matrix(current_axis, avg_ang_velo_value * time)
+
         
         # Update angular velocity
         self.ang_velo += time * ang_acc
