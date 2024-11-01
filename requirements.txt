@@ -1,4 +1,6 @@
 numpy
 matplotlib
 trimesh
+scipy
+rtree
 pyglet
