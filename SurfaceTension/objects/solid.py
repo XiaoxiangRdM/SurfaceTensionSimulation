@@ -119,7 +119,7 @@ class SolidObject():
         - vertices (np.ndarray): Array of vertex coordinates with shape (N, 3).
         - faces (np.ndarray): Array of face vertex indices with shape (M, 3).
         """
-        vertices = self.mesh.vertices  # Get vertex coordinates
+        vertices = (self.rotation_matrix @ self.mesh.vertices.T).T + self.centroid  # Get vertex coordinates
         faces = self.mesh.faces  # Get face indices
         return vertices, faces
 

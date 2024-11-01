@@ -12,15 +12,18 @@ class SolidSolidInteraction():
         self.mass2_fraction = 1 - self.mass1_fraction
 
 
-    def update(self, time):
+    def update(self):
         Bool_intersecting, bounce_point, normal, distance = self.check_collision()
         if (not Bool_intersecting): 
             return
         
+        # print("centroid, normal: ")
+        # print(self.solid1.centroid)
+        # print(normal)
         
-        # Move them to avoid the threshold, while keeping the center of mass still
-        self.solid1.centroid += self.mass2_fraction * (distance - 2 * self.collision_threshold) * normal
-        self.solid2.centroid -= self.mass1_fraction * (distance - 2 * self.collision_threshold) * normal
+        # # Move them to avoid the threshold, while keeping the center of mass still
+        # self.solid1.centroid += self.mass2_fraction * (distance - 10 * self.collision_threshold) * normal
+        # self.solid2.centroid -= self.mass1_fraction * (distance - 10 * self.collision_threshold) * normal
             
         # Vectors from centriods to bounce point 
         r_1 = bounce_point - self.solid1.centroid
@@ -28,6 +31,17 @@ class SolidSolidInteraction():
         
         # Velocity difference at the bounce point, v_1 - v_2
         delta_v = self.solid1.velo + np.cross(self.solid1.ang_velo, r_1) - self.solid2.velo - np.cross(self.solid2.ang_velo, r_2)
+        
+        # Perpendicular component
+        delta_v_perp = np.dot(normal, delta_v)
+        
+        # if Perpendicular component is negative, this means they are going away from each other, then no collision happens (in real world)
+        if delta_v_perp <= 0:
+            return
+        
+        print("Collides!")
+        print("delta_v_perp", np.dot(normal, delta_v))
+        print("elastic coefficient: ", self.ela_coeff)
         
         # Inverse of Inertia tensors in ground coordinate system
         I_1_inv = self.solid1.compute_inertia_inverse_ground()
@@ -44,7 +58,7 @@ class SolidSolidInteraction():
         ang_impulse_2 = np.cross(r_2, impulse)
         
         # Update solid1
-        self.solid1.velo += impulse / self.solid1.mass
+        self.solid1.velo -= impulse / self.solid1.mass
         self.solid1.ang_velo += I_1_inv @ ang_impulse_1
         
         # Update solid2
@@ -61,28 +75,65 @@ class SolidSolidInteraction():
         Returns:
             - bool: True if a collision is detected, False otherwise.
             - bounce_point (np.array): The closest point on solid2's surface to solid1.
-            - normal (np.array): The normalized direction vector from the bounce_point on solid1 
+            - normal (np.array): The normalized direction vector from the bounce_point on solid 1 
             to the bounce_point on solid 2, representing the collision normal.
             - distance (float): The minimum distance between the two solids.
         """
-        # Calculate the minimum distance between solid1 and solid2
-        proximity_query = trimesh.proximity.ProximityQuery(self.solid1)
-        closest_points_solid2, distance = proximity_query.signed_distance(self.solid2)
+        # # Initialize meshes
+        # vertices1, faces1 = self.solid1.get_mesh_data()
+        # vertices2, faces2 = self.solid2.get_mesh_data()
 
+        # mesh1 = trimesh.Trimesh(vertices=vertices1, faces=faces1)
+        # mesh2 = trimesh.Trimesh(vertices=vertices2, faces=faces2)
+        
+        # # Calculate the minimum distance between solid1 and solid2
+        # proximity_query = trimesh.proximity.ProximityQuery(mesh1)
+        # closest_points_mesh1, closest_points_mesh2, distance = trimesh.proximity.closest_point(mesh1, mesh2)
+
+        # # If the minimum distance is less than the collision threshold, a collision is detected
+        # if np.min(distance) < self.collision_threshold:
+        #     # Find the closest points on solid1 and solid2
+        #     min_idx = np.argmin(distance)
+            # closest_point_solid2 = closest_points_mesh2[min_idx]
+            # closest_point_solid1 = closest_points_mesh1[min_idx]
+            
+        # Initialize meshes
+        vertices1, faces1 = self.solid1.get_mesh_data()
+        vertices2, faces2 = self.solid2.get_mesh_data()
+        # print("vertices1: ", vertices1)
+        # print("vertices2: ", vertices2)
+        # print("faces1:", faces1)
+        # print("faces2:", faces2)
+
+        mesh1 = trimesh.Trimesh(vertices=vertices1, faces=faces1)
+        mesh2 = trimesh.Trimesh(vertices=vertices2, faces=faces2)
+        # print("mesh1:", mesh1)
+        
+        # Calculate the minimum distance between mesh1 and mesh2
+        proximity_query = trimesh.proximity.ProximityQuery(mesh2)
+        distances = -proximity_query.signed_distance(mesh1.vertices)
+        # print("distances: ", distances)
+        min_idx = np.argmin(distances)
+        distance = distances[min_idx]
+        # print("distance: ", distance)
+        
+        # Find the closest points on mesh1 and mesh2
+        closest_point_solid1 = mesh1.vertices[min_idx]
+        # print("closet_point_solid1: ", closest_point_solid1)
+        closest_point_solid2 = proximity_query.on_surface([closest_point_solid1])[0][0]
+        # print("closet_point_solid2: ", closest_point_solid2)
         # If the minimum distance is less than the collision threshold, a collision is detected
-        if np.min(distance) < self.collision_threshold:
-            # Find the closest points on solid1 and solid2
-            min_idx = np.argmin(distance)
-            closest_point_solid2 = closest_points_solid2[min_idx]
-            closest_point_solid1 = proximity_query.closest_point(self.solid1, closest_point_solid2)
+        if distance < self.collision_threshold:
             
             # Take weighted average
             bounce_point = self.mass1_fraction * closest_point_solid2 + self.mass2_fraction * closest_point_solid1
 
             # Calculate the normal as the unit vector from solid1's closest point to solid2's closest point
             direction_vector = closest_point_solid2 - closest_point_solid1
+            # print("direction_vector", direction_vector)
             # Normalize the collision normal
             normal = direction_vector / np.linalg.norm(direction_vector)  
+            # print("normal: ", normal)
             # TODO: what if normal is a zero vertor? 
             if (distance < 0):
                 normal = -normal
