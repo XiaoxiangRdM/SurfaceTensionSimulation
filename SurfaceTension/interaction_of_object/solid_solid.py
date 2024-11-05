@@ -60,10 +60,12 @@ class SolidSolidInteraction():
         # Update solid1
         self.solid1.velo -= impulse / self.solid1.mass
         self.solid1.ang_velo += I_1_inv @ ang_impulse_1
+        self.solid1.is_first_frame = True
         
         # Update solid2
         self.solid2.velo += impulse / self.solid2.mass
         self.solid2.ang_velo += I_2_inv @ ang_impulse_2
+        self.solid2.is_first_frame = True
         
         
     def check_collision(self):

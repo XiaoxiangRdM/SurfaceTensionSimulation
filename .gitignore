@@ -1,2 +1,9 @@
 # Ignore Python cache directories
 **/__pycache__/
+# Ignore tempCodeRunnerFile.py
+**/tempCodeRunnerFile.py
+# Ignore latex report generated files
+report/report.aux
+report/report.log
+report/report.out
+report/report.synctex

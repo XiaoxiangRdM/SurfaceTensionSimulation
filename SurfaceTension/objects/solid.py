@@ -18,6 +18,9 @@ class SolidObject():
         - velo (np.ndarray): Linear velocity.
         - ang_velo (np.ndarray): Angular velocity.
         - obj_file (str): Path to the .obj file.
+        - is_first_frame (bool): Is the first frame or not. 
+        - acc_last_frame (np.ndarray): Linear velocity of last frame.
+        - ang_acc_last_frame (np.ndarray): Angular velocity of last frame.
 
         Note:
         - The inertia tensor is assumed to be a diagonal matrix for computational efficiency, 
@@ -39,6 +42,12 @@ class SolidObject():
         self.ang_velo = ang_velo
         self.obj_file = obj_file
         self.mesh = trimesh.load(obj_file)  # Load .obj file
+        
+        self.is_first_frame = True
+        self.acc_last_frame = np.array([0,0,0])
+        self.ang_acc_last_frame = np.array([0,0,0])
+        
+        self.energy = 0
     
         self.axis = axis # stop maintenance
         self.angle = angle # stop maintenance
@@ -69,12 +78,15 @@ class SolidObject():
     def compute_inertia_inverse_ground(self): 
         return self.rotation_matrix @ self.iner_inv @ self.rotation_matrix.T
 
+    # def update_kinetic_energy(self): 
+    #     self.energy = 0.5 * (self.mass * self.velo.T @ self.velo + self.ang_velo.T @ self.compute_inertia_ground() @ self.ang_velo)
+    #     print("Energy: ", self.energy)
+
     def update(self, time, force, torque):
-        # Update linear motion
+        # Detect if is the first frame, if so then initialize 
+        
+        # Calculate linear acceleration
         lin_acc = force / self.mass
-        posi_change = self.velo * time + 0.5 * lin_acc * time * time
-        self.centroid += posi_change
-        self.velo += lin_acc * time
         
         # Calculate inertia tensor under the ground coordinates system
         iner_ground = self.compute_inertia_ground()
@@ -86,19 +98,35 @@ class SolidObject():
         # Calculate angular accelaration
         ang_acc = iner_inv_ground @ (torque - ang_velo_skew @ iner_ground @ self.ang_velo)
 
+        # Check if this is first frame. 
+        # If so, initialize linear acceleration and angular accelaration of last frame. 
+        if (self.is_first_frame): 
+            self.is_first_frame = False
+            self.acc_last_frame = lin_acc
+            self.ang_acc_last_frame = ang_acc
+
+        # Update linear motion
+        posi_change = self.velo * time + (4 * lin_acc - self.acc_last_frame) * time * time / 3
+        self.centroid += posi_change
+        
+        # Update linear velocity
+        self.velo += (1.5 * lin_acc - 0.5 * self.acc_last_frame) * time
         
         # Update rotation matrix 
-        avg_ang_velo = self.ang_velo + 0.5 * ang_acc * time
-        avg_ang_velo_value = np.linalg.norm(avg_ang_velo)
-        if avg_ang_velo_value != 0:
-            current_axis = (avg_ang_velo) / avg_ang_velo_value
-            self.rotation_matrix = self.rotation_matrix @ \
-                self.compute_rotation_matrix(current_axis, avg_ang_velo_value * time)
+        eff_ang_velo = self.ang_velo + \
+            (0.5 * np.cross(ang_acc, self.ang_velo) * time + (4 * ang_acc - self.ang_acc_last_frame)) * time / 6
+        eff_ang_velo_value = np.linalg.norm(eff_ang_velo)
+        if eff_ang_velo_value != 0:
+            current_axis = (eff_ang_velo) / eff_ang_velo_value
+            self.rotation_matrix = self.compute_rotation_matrix(current_axis, eff_ang_velo_value * time) @ \
+                self.rotation_matrix
 
-        
         # Update angular velocity
-        self.ang_velo += time * ang_acc
-
+        self.ang_velo += (1.5 * ang_acc - 0.5 * self.ang_acc_last_frame) * time
+        
+        # Update energy 
+        self.update_kinetic_energy()
+        
 
 
     def check_inside(self, pos):

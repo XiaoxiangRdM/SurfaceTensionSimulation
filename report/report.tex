@@ -1,0 +1,262 @@
+\documentclass[utf8]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{fullpage}
+\usepackage{setspace}
+\usepackage{verbatim}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{mathrsfs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{bbm}
+\hypersetup{hidelinks,
+	colorlinks=true,
+	allcolors=black,
+	pdfstartview=Fit,
+	breaklinks=true}
+
+
+\lstset{
+    language=bash,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    rulecolor=\color{black!30},
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=true,
+    escapeinside={\%*}{*)}
+}
+
+\onehalfspacing
+
+\title{\bf\huge Report}
+\author{Minrui Luo, luomr22@mails.tsinghua.edu.cn}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Proofs}
+
+\ \ \ \ Thm1. Angular acceleration derivation for rigid body: $\beta = I^{-1} \tau - I^{-1} [\omega] I \omega$, where $I$ is momentum of inertia according to centroid under ground reference frame, $\tau$ is total moment of force according to centroid, $\omega$ is angular velocity, $[\omega]$ is the skew matrix of $\omega$ which is defined as
+
+\begin{equation}\label{}
+  [\omega] = \begin{bmatrix}
+               0 & -\omega_z & \omega_y \\
+               \omega_z & 0 & -\omega_x \\
+               -\omega_y & \omega_x & 0
+             \end{bmatrix}
+\end{equation}
+
+(In this case: $\omega \times v = [\omega] v$)
+
+Proof: Firstly prove some lemmas.
+
+Lemma 1. $I_{\mathrm{centroid system}} = RI_{\mathrm{rigid body system}}R^\top$, where $R$ is the rotation matrix that transfer position vector from rigid body system to centroid system (Notice: this is a \textbf{translational system}), i.e. $r^{(\mathrm{centroid system})} = R r^{(\mathrm{rigid body system})}$.
+
+Proof: From definition of $I$:
+
+\begin{equation}\label{}
+ \begin{aligned}
+  I_{\mathrm{centroid system}} &= \int \left[\|r^{(\mathrm{centroid system})}\|^2 I_3 - r^{(\mathrm{centroid system})} {r^{(\mathrm{centroid system})}}^\top \right]\mathrm{d}m \\
+  &= \int \left[\|R r^{(\mathrm{rigid body system})}\|^2 I_3 - R r^{(\mathrm{rigid body system})} (R r^{(\mathrm{rigid body system})})^\top \right]\mathrm{d}m \\
+  &= \int \left[\|R r^{(\mathrm{rigid body system})}\|^2 I_3 - R r^{(\mathrm{rigid body system})} {r^{(\mathrm{rigid body system})}}^\top R^\top \right]\mathrm{d}m \\
+  &= \int \left[\|r^{(\mathrm{rigid body system})}\|^2 I_3 - R r^{(\mathrm{rigid body system})} {r^{(\mathrm{rigid body system})}}^\top R^\top \right]\mathrm{d}m \\
+  &= \int  \left[R \|r^{(\mathrm{rigid body system})}\|^2  I_3 R^\top - R r^{(\mathrm{rigid body system})} {r^{(\mathrm{rigid body system})}}^\top R^\top \right]\mathrm{d}m \\
+  &= R \left\{ \int \left[\|r^{(\mathrm{rigid body system})}\|^2 I_3 - r^{(\mathrm{rigid body system})} {r^{(\mathrm{rigid body system})}}^\top \right]\mathrm{d}m \right\} R^\top \\
+  &= R I_{\mathrm{rigid body system}} R^\top
+ \end{aligned}
+\end{equation}
+
+Notice that $I$ is an (positive) symmetric matrix, so carefully choosing reference frame of rigid body system results $I_{\mathrm{rigid body system}}$ to be a \textbf{diagonal} matrix.
+
+Lemma 2: Angular momentum theorem according to the reference point on the rigid body: $\tau = \frac{\mathrm{d} L}{\mathrm{d}t} = I_{\mathrm{centroid system}}\beta + \frac{\mathrm{d} I_{\mathrm{centroid system}}}{\mathrm{d}t} \omega$.
+
+Proof: From definition of angular momentum, %using $v = v_{ref} + \omega \times r$,
+
+\begin{equation}\label{}
+  L = \int r \times v \mathrm{d}m %= \int r \times (v_{ref} + \omega \times r) \mathrm{d}m = \int r \times v_{ref} \mathrm{d}m + \int r \times (v_{ref} + \omega \times r) \mathrm{d}m
+\end{equation}
+
+Thus
+
+\begin{equation}\label{}
+  \frac{\mathrm{d} L}{\mathrm{d} t} = \int v \times v + r\times a \mathrm{d}m = \int r\times a \mathrm{d}m
+\end{equation}
+
+Applying Newton's second law,
+
+\begin{equation}\label{}
+  \frac{\mathrm{d} L}{\mathrm{d} t} = \int r\times \mathrm{d}F = \tau
+\end{equation}
+
+where $\tau$ is total moment of force according to this reference point.
+
+Calculating $L$:
+
+\begin{equation}\label{}
+  L = \int r \times (\omega \times r) \mathrm{d}m = \int (r \cdot r)\omega - r(r \cdot \omega) \mathrm{d}m = \int \|r\|^2\omega - rr^\top \omega \mathrm{d}m = \left[\int \|r\|^2 - rr^\top \mathrm{d}m \right] \omega = I\omega
+\end{equation}
+
+where $I$ is the momentum of inertia under centroid (translational) reference, i.e. $I = I_{\mathrm{centroid system}}$. (Also is the momentum of inertia calculated under ground system. ) Omit subscripts where there is no ambiguity in the following text.
+
+Without proof, using a conclusion in derivative of exponential matrix, we introduce that $\frac{\mathrm{d} R}{\mathrm{d}t} = [\omega] R$.
+
+Lemma 3: $\frac{\mathrm{d} R^\top}{\mathrm{d}t} = -R^\top [\omega]$.
+
+Proof: From $R R^\top \equiv I_3$, take derivative of both side:
+
+\begin{equation}\label{}
+  \frac{\mathrm{d} R}{\mathrm{d}t} R^\top + R \frac{\mathrm{d} R^\top}{\mathrm{d}t} = 0
+\end{equation}
+
+Where
+
+\begin{equation}\label{}
+  L.H.S. = [\omega] R R^\top + R \frac{\mathrm{d} R^\top}{\mathrm{d}t} = [\omega] + R \frac{\mathrm{d} R^\top}{\mathrm{d}t}
+\end{equation}
+
+Which draws the result.
+
+Lemma 4: $\frac{\mathrm{d} I}{\mathrm{d}t} = [\omega]I - I[\omega]$.
+
+This follows from Lemma 1 and 3 immediately.
+
+Then the proof of Thm. 1 begins:
+
+From Angular momentum theorem according to centroid on the rigid body, combining previous lemmas,
+
+\begin{equation}\label{}
+  \tau = \frac{\mathrm{d} L}{\mathrm{d}t} = I \beta + \frac{\mathrm{d} I}{\mathrm{d}t} \omega = I \beta + ([\omega]I - I[\omega]) \omega = I \beta + [\omega]I \omega
+\end{equation}
+
+Last step follows from $[\omega] \omega = \mathbf{0}$. Thus
+
+\begin{equation}\label{}
+  \beta = I^{-1} \tau - I^{-1}[\omega]I \omega
+\end{equation}
+
+Proof 2. Collision of rigid body
+
+TODO.
+
+Proof 3. Updating error of velocity, angular velocity ($O(\delta t)^3$); position, rotation matrix ($O(\delta t)^4$)
+
+Updating rules:
+
+\begin{equation}\label{}
+  v_{t+\delta t} = v_t + \frac{3a_t - a_{t-\delta t}}{2} \delta t
+\end{equation}
+
+\begin{equation}\label{}
+  \omega_{t+\delta t} = \omega_t + \frac{3\beta_t - \beta_{t-\delta t}}{2} \delta t
+\end{equation}
+
+\begin{equation}\label{}
+  x_{t+\delta t} = x_t + v_t \delta t + \frac{4a_t - a_{t-\delta t}}{6} (\delta t)^2
+\end{equation}
+
+\begin{equation}\label{}
+  R_{t+\delta t} = \left\{e^{[\omega(t) + \frac{4\beta(t)-\beta(t-\delta t)}{6} \delta t] \delta t} - \frac{1}{12}([\beta(t)][\omega(t)] + [\omega(t)][\beta(t)]) (\delta t)^3 \right\} R(t)
+\end{equation}
+
+Proof: For the first 2 terms,
+
+\begin{equation}\label{}
+  f(t + \delta t) = f(t) + f^\prime (t) \delta t + \frac{1}{2} f^{\prime\prime}(t) (\delta t)^2 + O((\delta t)^3)
+\end{equation}
+
+\begin{equation}\label{}
+  f^\prime(t - \delta t) = f^\prime (t) - f^{\prime\prime}(t) \delta t + O((\delta t)^2)
+\end{equation}
+
+Combining those two we get
+
+\begin{equation}\label{}
+ \begin{aligned}
+  f(t + \delta t) &= f(t) + f^\prime (t) \delta t + \frac{1}{2} (f^{\prime}(t) - f^\prime(t - \delta t) + O((\delta t)^2)) \delta t + O((\delta t)^3) \\
+  &= f(t) + \frac{1}{2} (3f^{\prime}(t) - f^\prime(t - \delta t)) \delta t + O((\delta t)^3)
+ \end{aligned}
+\end{equation}
+
+For position $x$:
+
+\begin{equation}\label{}
+  f(t + \delta t) = f(t) + f^\prime (t) \delta t + \frac{1}{2} f^{\prime\prime}(t) (\delta t)^2 + \frac{1}{6} f^{\prime\prime\prime}(t) (\delta t)^3 + O((\delta t)^4)
+\end{equation}
+
+\begin{equation}\label{}
+  f^{\prime\prime}(t - \delta t) = f^{\prime\prime}(t) - f^{\prime\prime\prime}(t) \delta t + O((\delta t)^2)
+\end{equation}
+
+Combining those two
+
+\begin{equation}\label{}
+ \begin{aligned}
+  f(t + \delta t) &= f(t) + f^\prime (t) \delta t + \frac{1}{2} f^{\prime\prime}(t) (\delta t)^2 + \frac{1}{6} (f^{\prime\prime}(t) - f^{\prime\prime}(t - \delta t) + O((\delta t)^2)) (\delta t)^2 + O((\delta t)^4) \\
+  &= f(t) + f^\prime (t) \delta t + \frac{1}{6} (4f^{\prime\prime}(t) - f^{\prime\prime}(t - \delta t)) (\delta t)^2 + O((\delta t)^4)
+ \end{aligned}
+\end{equation}
+
+For the last term (Here big-$O$ means F-norm):
+
+\begin{equation}\label{}
+  R(t+\delta t) = R(t) + \dot{R}(t) \delta t + \frac{1}{2} \ddot{R}(t) (\delta t)^2 + \frac{1}{6} \dddot{R}(t) (\delta t)^3 + O((\delta t)^4)
+\end{equation}
+
+\begin{equation}\label{}
+  \dot{R}(t) = [\omega] R
+\end{equation}
+
+\begin{equation}\label{}
+  \ddot{R}(t) = [\beta] R + [\omega]^2 R
+\end{equation}
+
+\begin{equation}\label{}
+  \dddot{R}(t) = [\dot{\beta}] R + 2[\beta][\omega] R + [\omega][\beta] R + [\omega]^3 R
+\end{equation}
+
+Thus
+
+\begin{equation}\label{}
+ \begin{aligned}
+  R(t+\delta t) &= \left\{I + [\omega(t)] \delta t + \frac{1}{2} ([\beta(t)] + [\omega(t)]^2 ) (\delta t)^2 \right. \\
+  &+ \left. \frac{1}{6} ([\dot{\beta}(t)] + 2[\beta(t)][\omega(t)] + [\omega(t)][\beta(t)] + [\omega(t)]^3) (\delta t)^3 \right\} R(t) + O((\delta t)^4)
+ \end{aligned}
+\end{equation}
+
+From the fact that $[a][b] = b a^\top - \langle a, b\rangle I_3$, $[a\times b] = b a^\top - a b^\top$ (actually this is from $a\times(b\times c) = b(a\cdot c) - c(a\cdot b)$, $(a\times b)\times c = b(a\cdot c) - a(b\cdot c)$)
+
+\begin{equation}\label{}
+  ([\beta][\omega] - [\omega][\beta]) = \omega \beta^\top - \beta \omega^\top = [\beta \times \omega]
+\end{equation}
+
+Combine with $\dot{\beta}(t) = \frac{\beta(t) - \beta(t-\delta t)}{\delta t} + O(\delta t)$:
+
+\begin{equation}\label{}
+ \begin{aligned}
+  R(t+\delta t) &= \left\{I + [\omega(t)] \delta t + \left(\frac{1}{2} [\beta(t)] + \frac{1}{2} [\omega(t)]^2 + \frac{1}{6}[\beta(t) - \beta(t-\delta t)]\right) (\delta t)^2 \right. \\
+  &+ \left. \frac{1}{6} (2[\beta(t)][\omega(t)] + [\omega(t)][\beta(t)] + [\omega(t)]^3) (\delta t)^3 \right\} R(t) + O((\delta t)^4) \\
+  &= \left\{e^{[\omega(t) + \frac{4\beta(t)-\beta(t-\delta t)}{6} \delta t] \delta t} + \frac{1}{12}([\beta(t)][\omega(t)] - [\omega(t)][\beta(t)]) (\delta t)^3 \right\} R(t) + O((\delta t)^4) \\
+  &= \left\{e^{[\omega(t) + \frac{4\beta(t)-\beta(t-\delta t)}{6} \delta t + \frac{1}{12}\beta(t) \times \omega(t) (\delta t)^2] \delta t} \right\} R(t) + O((\delta t)^4)
+ \end{aligned}
+\end{equation}
+
+ACK: huang-wj22@mails.tsinghua.edu.cn, idea on applying Taylor's expansion of rotation matrix and checking proof details.  
+
+
+
+\end{document} 
