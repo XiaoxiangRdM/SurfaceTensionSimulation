@@ -19,8 +19,12 @@ class SolidObject():
         - ang_velo (np.ndarray): Angular velocity.
         - obj_file (str): Path to the .obj file.
         - is_first_frame (bool): Is the first frame or not. 
-        - acc_last_frame (np.ndarray): Linear velocity of last frame.
-        - ang_acc_last_frame (np.ndarray): Angular velocity of last frame.
+        - centroid_last_frame (np.ndarray): Position of the centroid of last frame.
+        - rotation_matrix_last_frame (np.ndarray): Rotation matrix of last frame. 
+        - velo_last_frame (np.ndarray): Linear velocity of last frame.
+        - ang_velo_last_frame (np.ndarray): Angular velocity of last frame.
+        - acc_last_frame (np.ndarray): Linear acceleration of last frame.
+        - ang_acc_last_frame (np.ndarray): Angular acceleration of last frame.
 
         Note:
         - The inertia tensor is assumed to be a diagonal matrix for computational efficiency, 
@@ -44,6 +48,10 @@ class SolidObject():
         self.mesh = trimesh.load(obj_file)  # Load .obj file
         
         self.is_first_frame = True
+        self.centroid_last_frame = np.array([0,0,0])
+        self.rotation_matrix_last_frame = np.eye(3)
+        self.velo_last_frame = np.array([0,0,0])
+        self.ang_velo_last_frame = np.array([0,0,0])
         self.acc_last_frame = np.array([0,0,0])
         self.ang_acc_last_frame = np.array([0,0,0])
         
@@ -78,9 +86,16 @@ class SolidObject():
     def compute_inertia_inverse_ground(self): 
         return self.rotation_matrix @ self.iner_inv @ self.rotation_matrix.T
 
-    # def update_kinetic_energy(self): 
-    #     self.energy = 0.5 * (self.mass * self.velo.T @ self.velo + self.ang_velo.T @ self.compute_inertia_ground() @ self.ang_velo)
-    #     print("Energy: ", self.energy)
+    def update_kinetic_energy(self): 
+        self.energy = 0.5 * (self.mass * self.velo.T @ self.velo + self.ang_velo.T @ self.compute_inertia_ground() @ self.ang_velo)
+        
+    def update_last_frame_vars(self, acc, ang_acc): 
+        self.centroid_last_frame = self.centroid
+        self.rotation_matrix_last_frame = self.rotation_matrix
+        self.velo_last_frame = self.velo
+        self.ang_velo_last_frame = self.ang_velo
+        self.acc_last_frame = acc
+        self.ang_acc_last_frame = ang_acc
 
     def update(self, time, force, torque):
         # Detect if is the first frame, if so then initialize 
@@ -101,16 +116,16 @@ class SolidObject():
         # Check if this is first frame. 
         # If so, initialize linear acceleration and angular accelaration of last frame. 
         if (self.is_first_frame): 
-            self.is_first_frame = False
-            self.acc_last_frame = lin_acc
-            self.ang_acc_last_frame = ang_acc
+            self.update_last_frame_vars(acc=lin_acc, ang_acc=ang_acc)
 
         # Update linear motion
-        posi_change = self.velo * time + (4 * lin_acc - self.acc_last_frame) * time * time / 3
+        posi_change = self.velo * time + (4 * lin_acc - self.acc_last_frame) * (time ** 2) / 3
         self.centroid += posi_change
+        # self.centroid = (2 * self.centroid - self.centroid_last_frame) + self.velo * time + lin_acc * (time ** 2)
         
         # Update linear velocity
         self.velo += (1.5 * lin_acc - 0.5 * self.acc_last_frame) * time
+        # self.velo = (self.centroid - self.centroid_last_frame) / (time * 2)
         
         # Update rotation matrix 
         eff_ang_velo = self.ang_velo + \
@@ -124,8 +139,13 @@ class SolidObject():
         # Update angular velocity
         self.ang_velo += (1.5 * ang_acc - 0.5 * self.ang_acc_last_frame) * time
         
+        # Update last-frame variables
+        self.update_last_frame_vars(acc=lin_acc, ang_acc=ang_acc)
+        
         # Update energy 
         self.update_kinetic_energy()
+        
+        self.is_first_frame = False
         
 
 

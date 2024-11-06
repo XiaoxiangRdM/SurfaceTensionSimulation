@@ -6,11 +6,12 @@ import SurfaceTension.objects.fluid as fluid
 import SurfaceTension.interaction_of_object.solid_solid as solid_solid
         
 class SolidObjectVisualizer:
-    def __init__(self, solid_objs):
+    def __init__(self, solid_objs, dt):
         # Sorted by increasing order of mass
         self.solid_objs = sorted(solid_objs, key=lambda obj: obj.mass, reverse=False)
+        self.dt = dt
 
-    def visualize(self, steps=3000, dt=0.03, forces=None, torques=None):
+    def visualize(self, steps=1000, forces=None, torques=None):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim([-5, 5])
@@ -29,14 +30,12 @@ class SolidObjectVisualizer:
             ax.set_xlim([-3, 3])
             ax.set_ylim([-3, 3])
             ax.set_zlim([-3, 3])
-
-            # print("Energy: ", self.solid_objs[1].energy)
             
             for i, solid_obj in enumerate(self.solid_objs):
                 vertices, faces = solid_obj.get_mesh_data()
                 # Update each object's state
-                solid_obj.update(dt, (forces[i] - 1 * solid_obj.centroid + np.array([0, 0, -0.981]) * solid_obj.mass) * 0, - 0.01 * solid_obj.ang_velo + torques[i])
-                # print("Energy: ", self.solid_objs[1].energy)
+                solid_obj.update(self.dt, (forces[i] - 1 * solid_obj.centroid + np.array([0, 0, -0.981]) * solid_obj.mass) , - 0.00 * solid_obj.ang_velo + torques[i])
+                # print("Energy: ", solid_obj.energy)
                 
                 for j in range(i - 1, -1, -1):
                     # check and handle collision
@@ -63,7 +62,7 @@ class SolidObjectVisualizer:
                               axis[0], axis[1], axis[2],
                               color=['r', 'g', 'b'][j], length=1.0)
 
-            plt.pause(0.003)
+            plt.pause(self.dt)
 
         plt.show()
 
@@ -77,7 +76,7 @@ solid_obj_1 = solid.SolidObject(
     axis=np.array([1.0, 0.0, 0.0]),
     angle=0.0,
     velo=np.array([0.0, 0.0, 0.0]),
-    ang_velo=np.array([0.0, 0.0, 0.0]),
+    ang_velo=np.array([0.0, -2.0, 0.0]),
     obj_file="./data/icosahedron_input.obj"
 )
 
@@ -85,17 +84,17 @@ solid_obj_2 = solid.SolidObject(
     name="TestSolid2",
     mass=1.0,
     volume=1.0,
-    iner=np.array([25.0, 5.0, 1.0]),
+    iner=np.array([1.0, 1.0, 1.0]),
     centroid=np.array([0.0, 0.0, -1.5]),
     axis=np.array([1.0, 0.0, 0.0]),
     angle=0.0,
     velo=np.array([0.0, 0.0, 0.0]),
-    ang_velo=np.array([0.0, 1.0, 0.01]),
+    ang_velo=np.array([0.0, 2.0, 0.01]),
     obj_file="./data/icosahedron_input.obj"
 )
 
 solid_objs = [solid_obj_1, solid_obj_2]
 
-visualizer = SolidObjectVisualizer(solid_objs)
+visualizer = SolidObjectVisualizer(solid_objs, dt=0.05)
 visualizer.visualize()
 

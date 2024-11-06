@@ -21,6 +21,7 @@ class SolidSolidInteraction():
         # print(self.solid1.centroid)
         # print(normal)
         
+        """This part is not used anymore"""
         # # Move them to avoid the threshold, while keeping the center of mass still
         # self.solid1.centroid += self.mass2_fraction * (distance - 10 * self.collision_threshold) * normal
         # self.solid2.centroid -= self.mass1_fraction * (distance - 10 * self.collision_threshold) * normal
