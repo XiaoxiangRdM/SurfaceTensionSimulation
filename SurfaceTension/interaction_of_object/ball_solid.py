@@ -2,7 +2,7 @@ import numpy as np
 import trimesh
 import SurfaceTension.utils as utils
 
-class SolidSolidInteraction():
+class BallSolidInteraction():
     def __init__(self, solid, ball, ela_coeff=1.0, collision_threshold=1e-3):
         self.solid = solid
         self.ball = ball
@@ -33,7 +33,7 @@ class SolidSolidInteraction():
         #bounce_point - self.solid2.centroid
         
         # Velocity difference at the bounce point, v_1 - v_2
-        delta_v = self.solid1.velo + np.cross(self.solid1.ang_velo, r_1) - self.solid2.velo - np.cross(self.solid2.ang_velo, r_2)
+        delta_v = self.solid.velo + np.cross(self.solid.ang_velo, r_1) - self.ball.velo - np.cross(self.ball.ang_velo, r_2)
         
         # Perpendicular component
         delta_v_perp = np.dot(normal, delta_v)
@@ -119,7 +119,7 @@ class SolidSolidInteraction():
         # Calculate the minimum distance between mesh1 and mesh2
         proximity_query = trimesh.proximity.ProximityQuery(mesh)
         #query_points1 = np.concatenate((vertices1, mesh1.sample(100)), axis=0)
-        cent_distance = -proximity_query.signed_distance(centroid)
+        cent_distance = -proximity_query.signed_distance([centroid])[0]
         distance = cent_distance - radius
         # print("distances: ", distances)
         #min_idx1 = np.argmin(distances2)

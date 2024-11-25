@@ -2,7 +2,7 @@ import numpy as np
 import trimesh
 import SurfaceTension.utils as utils
 
-class ballballInteraction():
+class BallBallInteraction():
     def __init__(self, ball1, ball2, ela_coeff=1.0, collision_threshold=1e-3):
         self.ball1 = ball1
         self.ball2 = ball2
