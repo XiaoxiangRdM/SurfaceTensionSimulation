@@ -1,6 +1,5 @@
 import numpy as np
 import trimesh
-import SurfaceTension.utils as utils
 
 class SolidSolidInteraction():
     def __init__(self, solid1, solid2, ela_coeff=1.0, collision_threshold=1e-3):
@@ -114,76 +113,36 @@ class SolidSolidInteraction():
         # print("mesh1:", mesh1)
         
         # Calculate the minimum distance between mesh1 and mesh2
-        proximity_query2 = trimesh.proximity.ProximityQuery(mesh2)
-        query_points1 = np.concatenate((vertices1, mesh1.sample(100)), axis=0)
-        _, distances2, triangles2 = proximity_query2.on_surface(query_points1)
+        proximity_query = trimesh.proximity.ProximityQuery(mesh2)
+        distances = -proximity_query.signed_distance(mesh1.vertices)
         # print("distances: ", distances)
-        min_idx1 = np.argmin(distances2)
-        distance1 = distances2[min_idx1]
+        min_idx = np.argmin(distances)
+        distance = distances[min_idx]
         # print("distance: ", distance)
         
-        proximity_query1 = trimesh.proximity.ProximityQuery(mesh1)
-        query_points2 = np.concatenate((vertices2, mesh2.sample(100)), axis=0)
-        _, distances1, triangles1 = proximity_query1.on_surface(query_points2)
-        # print("distances: ", distances)
-        min_idx2 = np.argmin(distances1)
-        distance2 = distances2[min_idx2]
-        # print("distance: ", distance)
-        
-        distance = np.min([distance1, distance2])
-        
-        #
-        #closest_point_solid1 = mesh1.vertices[min_idx]
+        # Find the closest points on mesh1 and mesh2
+        closest_point_solid1 = mesh1.vertices[min_idx]
         # print("closet_point_solid1: ", closest_point_solid1)
-        #closest_point_solid2 = proximity_query.on_surface([closest_point_solid1])[0][0]
+        closest_point_solid2 = proximity_query.on_surface([closest_point_solid1])[0][0]
         # print("closet_point_solid2: ", closest_point_solid2)
         # If the minimum distance is less than the collision threshold, a collision is detected
         if distance < self.collision_threshold:
-            # Calculate the normal
-            normal = np.zeros(3)
-            if distance == distance1:
-                # Find the closest triangle on solid2
-                triangle_id = triangles2[min_idx1]
-                triangle_face = faces2[triangle_id]
-                u = vertices2[triangle_face[0]]
-                v = vertices2[triangle_face[1]]
-                w = vertices2[triangle_face[2]]
-                normal = utils.normal_of_triangle(u, v, w)
-                closest_point_solid1 = query_points1[min_idx1]
-                distance = np.dot(normal, closest_point_solid1 - u)
-                closest_point_solid2 = closest_point_solid1 - distance * normal
-                if distance > 0:
-                    normal = -normal
-            
-            if distance == distance2:
-                # Find the closest triangle on solid1
-                triangle_id = triangles1[min_idx2]
-                triangle_face = faces1[triangle_id]
-                u = vertices1[triangle_face[0]]
-                v = vertices1[triangle_face[1]]
-                w = vertices1[triangle_face[2]]
-                normal = utils.normal_of_triangle(u, v, w)
-                closest_point_solid2 = query_points2[min_idx2]
-                distance = np.dot(normal, closest_point_solid2 - u)
-                closest_point_solid1 = closest_point_solid2 - distance * normal
-                if distance < 0:
-                    normal = -normal
             
             # Take weighted average
             bounce_point = self.mass1_fraction * closest_point_solid2 + self.mass2_fraction * closest_point_solid1
 
             # Calculate the normal as the unit vector from solid1's closest point to solid2's closest point
-            #direction_vector = closest_point_solid2 - closest_point_solid1
+            direction_vector = closest_point_solid2 - closest_point_solid1
             # print("direction_vector", direction_vector)
             # Normalize the collision normal
-            #normal = direction_vector / np.linalg.norm(direction_vector)  
+            normal = direction_vector / np.linalg.norm(direction_vector)  
             # print("normal: ", normal)
             # TODO: what if normal is a zero vertor? 
-            #if (distance < 0):
-                #normal = -normal
-            #if (distance == 0):
+            if (distance < 0):
+                normal = -normal
+            if (distance == 0):
                 # Find the normal from the face of the solid
-                #normal = np.array([0, 0, 0])
+                normal = np.array([0, 0, 0])
             
             return True, bounce_point, normal, np.min(distance)
         return False, None, None, None
