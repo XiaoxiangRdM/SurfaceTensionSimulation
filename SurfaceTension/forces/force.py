@@ -42,6 +42,7 @@ class Rope(Force):
         beta = 2 * np.sqrt(K * mass) # damping coefficient
         force = - (K * (self.distance - self.length) + beta * v_r) * self.r_hat
         
+        
         tau_0 = 1e-1 # half-time period
         coefficient = 2 ** (-self.dt/tau_0)
         self.object.centroid -= self.r_hat * (self.distance - self.length) * coefficient

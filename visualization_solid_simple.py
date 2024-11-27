@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import threading
 import SurfaceTension.objects.solid as solid
-#import SurfaceTension.objects.ball as ball
 import SurfaceTension.objects.fluid as fluid
 import SurfaceTension.interaction_of_object.solid_solid as solid_solid
 import SurfaceTension.forces.force as Forces
@@ -199,11 +198,11 @@ ball_obj_1 = solid.BallObject(
 ball_obj_2 = solid.BallObject(
     name="TestSolid2",
     mass=1.0,
-    volume=1.0,    
-    centroid=np.array([0.0, 0.0, -1]),
+    volume=1.0,
+    centroid=np.array([0.0, 0.0, -2.5]),
     axis=np.array([1.0, 0.0, 0.0]),
     angle=0.0,
-    velo=np.array([0.0, 0.0, -0.0]),
+    velo=np.array([0.0, 0.0, 0.0]),
     ang_velo=np.array([0.0, 0.0, 0.0]),
     radius=0.5
 ) 
@@ -212,7 +211,7 @@ ball_obj_3 = solid.BallObject(
     name="TestSolid3",
     mass=1.0,
     volume=1.0,
-    centroid=np.array([0.0, 1.0, -1]),
+    centroid=np.array([0.0, 1.1, -1.5]),
     axis=np.array([1.0, 0.0, 0.0]),
     angle=0.0,
     velo=np.array([0.0, 0.0, 0.0]),
