@@ -33,10 +33,19 @@ class Rope(Force):
 
         
     def get_force_and_torque(self):
+        if self.distance <= self.length: 
+            return np.array([0, 0, 0]), np.array([0, 0, 0])
+        
         v_r = np.dot(self.velo, self.r_hat) # relative velocity along the rope
         mass = self.object.mass
         K = 1e3 * mass
         beta = 2 * np.sqrt(K * mass) # damping coefficient
         force = - (K * (self.distance - self.length) + beta * v_r) * self.r_hat
+        
+        tau_0 = 1e-1 # half-time period
+        coefficient = 2 ** (-self.dt/tau_0)
+        self.object.centroid -= self.r_hat * (self.distance - self.length) * coefficient
+        self.object.velo -= self.r_hat * v_r  * coefficient
+        return np.array([0, 0, 0]), np.array([0, 0, 0])
         return force, np.cross(self.arm_of_force, force)
  
