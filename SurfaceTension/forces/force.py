@@ -22,14 +22,14 @@ class Rope(Force):
         """
         self.length = length
         # self.stationary_point = stationary_point
-        self.hanging_point = self.object.centriod + self.rotation_matrix @ hanging_point
-        self.arm_of_force = stationary_point - self.object.centriod
+        self.hanging_point = self.object.centroid + self.object.rotation_matrix @ hanging_point
+        self.arm_of_force = stationary_point - self.object.centroid
         
         self.r_relative = self.hanging_point - stationary_point
-        self.distance = self.r_relative.norm()
+        self.distance = np.linalg.norm(self.r_relative)
         self.r_hat = self.r_relative / self.distance
         
-        self.velo = self.object.velo + np.cross(self.object.ang_velo, self.hanging_point - self.object.centriod)
+        self.velo = self.object.velo + np.cross(self.object.ang_velo, self.hanging_point - self.object.centroid)
 
         
     def get_force_and_torque(self):
