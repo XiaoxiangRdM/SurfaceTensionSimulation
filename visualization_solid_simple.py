@@ -6,8 +6,6 @@ import SurfaceTension.objects.solid as solid
 #import SurfaceTension.objects.ball as ball
 import SurfaceTension.objects.fluid as fluid
 import SurfaceTension.interaction_of_object.solid_solid as solid_solid
-import SurfaceTension.interaction_of_object.ball_solid as ball_solid
-import SurfaceTension.interaction_of_object.ball_ball as ball_ball
 import SurfaceTension.forces.force as Forces
         
 class SolidObjectVisualizer:
@@ -67,7 +65,7 @@ class SolidObjectVisualizer:
             for _, solid_obj in enumerate(self.solid_objs):
                 vertices, faces = solid_obj.get_mesh_data()
                 # Update each object's state
-                solid_obj.update(self.dt, forces[i] - 1 * solid_obj.centroid + np.array([0, 0, -0.981]) * solid_obj.mass, - 0.00 * solid_obj.ang_velo + torques[i])
+                solid_obj.update(self.dt, forces[i] + np.array([0, 0, -9.81]) * solid_obj.mass * 0, torques[i])
                 #threading.Thread(target=record_data, args=(solid_obj, i)).start()
                 
                 with open("example_"+str(i)+".txt", 'a') as file:
@@ -108,7 +106,7 @@ class SolidObjectVisualizer:
                 radius = ball_obj.radius    
                 # Update each object's state
                 #print("forces[i]:", i, forces[i])
-                ball_obj.update(self.dt, forces[i] + np.array([0, 0, -98.1]) * ball_obj.mass, torques[i])
+                ball_obj.update(self.dt, forces[i] + np.array([0, 0, -9.81]) * ball_obj.mass, torques[i])
                 #threading.Thread(target=record_data, args=(solid_obj, i)).start()
                 
                 with open("example_"+str(i)+".txt", 'a') as file:
@@ -201,22 +199,20 @@ ball_obj_1 = solid.BallObject(
 ball_obj_2 = solid.BallObject(
     name="TestSolid2",
     mass=1.0,
-    volume=1.0,
-    
-    centroid=np.array([0.0, 0.0, -2.5]),
+    volume=1.0,    
+    centroid=np.array([0.0, 0.0, -1]),
     axis=np.array([1.0, 0.0, 0.0]),
     angle=0.0,
-    velo=np.array([0.0, 0.0, 0.0]),
+    velo=np.array([0.0, 0.0, -0.0]),
     ang_velo=np.array([0.0, 0.0, 0.0]),
     radius=0.5
-) #iner=np.array([25.0, 5.0, 1.0]),
+) 
 
 ball_obj_3 = solid.BallObject(
     name="TestSolid3",
     mass=1.0,
     volume=1.0,
-    
-    centroid=np.array([0.0, 1.1, -1.5]),
+    centroid=np.array([0.0, 1.0, -1]),
     axis=np.array([1.0, 0.0, 0.0]),
     angle=0.0,
     velo=np.array([0.0, 0.0, 0.0]),
@@ -226,13 +222,13 @@ ball_obj_3 = solid.BallObject(
 
 solid_objs = []
 ball_objs = [ball_obj_1, ball_obj_2, ball_obj_3]
-node1 = np.array([0.0, -1.0, 9.0])
+node1 = np.array([0.0, -1.01, 9.0])
 node2 = np.array([0.0, 0.0, 9.0])
-node3 = np.array([0.0, 1.1, 9.0])
+node3 = np.array([0.0, 1.01, 9.0])
 nodes = [node1, node2, node3]
 hanging_point= np.array([0.0, 0.0, 0.0])
 length = 10.0
 
 
-visualizer = SolidObjectVisualizer(solid_objs, ball_objs, dt=3e-3, use_external_force=True, fixed_nodes=nodes, hanging_point=hanging_point, length=length)
+visualizer = SolidObjectVisualizer(solid_objs, ball_objs, dt=3e-2, use_external_force=True, fixed_nodes=nodes, hanging_point=hanging_point, length=length)
 visualizer.visualize()
